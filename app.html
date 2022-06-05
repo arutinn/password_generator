@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Password Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+    <script type="module">
+      import { Application, Controller } from "https://unpkg.com/@hotwired/stimulus/dist/stimulus.js"
+      window.Stimulus = Application.start()
+
+      Stimulus.register("passwords", class extends Controller {
+        static targets = ["checkbox", "passLength", "passResult"]
+
+        connect() {
+          this.generatePassword()
+        }
+
+        get source() {
+          let value = ""
+
+          this.checkboxTargets.forEach(checkbox => {
+            if (checkbox.checked) {
+              value += checkbox.dataset.value
+            }
+          })
+
+          return value
+        }
+
+        generatePassword() {
+          this.passResultTarget.value = this.generateString(this.passLengthTarget.value, this.source)
+        }
+
+        resetForm() {
+          this.checkboxTargets.forEach(checkbox => checkbox.checked = true)
+          this.passLengthTarget.value = 6
+          this.passLengthTarget.oninput()
+          this.passResultTarget.value = ""
+        }
+
+        copyPassword() {
+          navigator.clipboard.writeText(this.passResultTarget.value);
+        }
+
+        generateString(length, characters) {
+          let result           = "",
+              charactersLength = characters.length
+
+          for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength))
+          }
+
+          return result;
+        }
+      })
+    </script>
+  </head>
+  <body>
+    <div class="flex h-screen bg-gray-200 items-center justify-center" data-controller="passwords">
+      <div class="grid bg-white rounded-lg shadow-xl w-11/12 md:w-9/12 lg:w-1/2">
+        <div class="w-5/6 mx-auto py-8">
+          <div class="flex justify-center py-4">
+            <div class="flex bg-purple-200 rounded-full md:p-4 p-2 border-2 border-purple-300">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+              </svg>
+            </div>
+          </div>
+
+          <div class="flex justify-center">
+            <div class="flex">
+              <h1 class="text-gray-600 font-bold md:text-2xl text-xl">Password Generator</h1>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 mt-5 mx-7">
+            <input class="py-2 px-3 rounded-lg border-2 border-purple-300 mt-1 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+            type="text" placeholder="Generate Your Password", readonly ="true" data-passwords-target='passResult' />
+          </div>
+          <div class="flex flex-col mx-auto mx-7">
+
+            <div class="p-4">
+              <label for="default-range" class="mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Password length:</label>
+              <output class="font-semibold text-purple-600">6</output>
+              <input id="default-range" type="range" min="4" max="20" value="6" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 text-purple-600"
+              oninput="this.previousElementSibling.value = this.value" data-passwords-target="passLength" data-action="change->passwords#generatePassword">
+            </div>
+
+            <label class="inline-flex items-center mt-3">
+              <input type="checkbox" class="form-checkbox h-5 w-5 text-purple-600" checked data-value='~`!@#$%^&*()-_+={}[]|\/:;"<>,.?'
+              data-passwords-target="checkbox" data-action="change->passwords#generatePassword">
+              <span class="ml-2 text-gray-700">Include Symbols (@#$%)</span>
+            </label>
+            <label class="inline-flex items-center mt-3">
+              <input type="checkbox" class="form-checkbox h-5 w-5 text-purple-600" checked data-value="0123456789"
+              data-passwords-target="checkbox" data-action="change->passwords#generatePassword">
+              <span class="ml-2 text-gray-700">Include Numbers (1234)</span>
+            </label>
+            <label class="inline-flex items-center mt-3">
+              <input type="checkbox" class="form-checkbox h-5 w-5 text-purple-600" checked data-value="abcdefghijklmnopqrstuvwxyz"
+              data-passwords-target="checkbox" data-action="change->passwords#generatePassword">
+              <span class="ml-2 text-gray-700">Include Lowercase Characters (abcd)</span>
+            </label>
+            <label class="inline-flex items-center mt-3">
+              <input type="checkbox" class="form-checkbox h-5 w-5 text-purple-600" checked data-value="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+              data-passwords-target="checkbox" data-action="change->passwords#generatePassword">
+              <span class="ml-2 text-gray-700">Include Uppercase Characters (ABCD)</span>
+            </label>
+          </div>
+
+          <div class="flex items-center justify-center  md:gap-8 gap-4 pt-5 pb-5">
+            <button class="w-auto bg-purple-500 hover:bg-purple-700 rounded-lg shadow-xl font-medium text-white px-4 py-2" data-action="passwords#generatePassword">Re-Create</button>
+            <button class="w-auto bg-gray-500 hover:bg-gray-700 rounded-lg shadow-xl font-medium text-white px-4 py-2" data-action="passwords#resetForm">Reset</button>
+            <button class="w-auto bg-gray-500 hover:bg-gray-700 rounded-lg shadow-xl font-medium text-white px-4 py-2" data-action="passwords#copyPassword">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
